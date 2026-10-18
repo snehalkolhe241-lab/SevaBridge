@@ -5,6 +5,7 @@ import type {
   CampaignItemNeed,
   CampaignStatus,
   CampaignSummary,
+  CommitmentStatus,
   PublicOrganization,
 } from '../types'
 
@@ -194,5 +195,111 @@ export async function saveCampaign(input: {
 
 export async function updateCampaignStatus(id: string, status: CampaignStatus) {
   const { error } = await getSupabase().from('campaigns').update({ status }).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+export type OwnerPledge = {
+  id: string
+  commitment_type: 'item' | 'money'
+  item_need_id: string | null
+  donor_name: string
+  donor_email: string | null
+  donor_phone: string | null
+  amount: number | null
+  quantity: number | null
+  status: CommitmentStatus
+  created_at: string
+}
+
+export type OwnerUpdate = {
+  id: string
+  title: string
+  body: string
+  image_url: string | null
+  published_at: string | null
+}
+
+export async function loadWorkspace(id: string) {
+  const org = await loadOwnOrganization()
+  if (!org) return null
+  const { data, error } = await getSupabase()
+    .from('campaigns')
+    .select(CAMPAIGN_COLUMNS)
+    .eq('id', id)
+    .eq('organization_id', org.id)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  if (!data) return null
+
+  const [needsResult, pledgeResult, updateResult] = await Promise.all([
+    getSupabase()
+      .from('campaign_item_needs')
+      .select('id, campaign_id, item_name, description, quantity_needed, unit, created_at, updated_at')
+      .eq('campaign_id', id)
+      .order('created_at'),
+    getSupabase()
+      .from('commitments')
+      .select('id, commitment_type, item_need_id, donor_name, donor_email, donor_phone, amount, quantity, status, created_at')
+      .eq('campaign_id', id)
+      .order('created_at', { ascending: false }),
+    getSupabase()
+      .from('campaign_updates')
+      .select('id, title, body, image_url, published_at')
+      .eq('campaign_id', id)
+      .order('published_at', { ascending: false }),
+  ])
+  if (needsResult.error) throw new Error(needsResult.error.message)
+  if (pledgeResult.error) throw new Error(pledgeResult.error.message)
+  if (updateResult.error) throw new Error(updateResult.error.message)
+
+  const needs = (needsResult.data ?? []) as CampaignItemNeed[]
+  const pledges: OwnerPledge[] = (pledgeResult.data ?? []).map((row) => ({
+    id: row.id,
+    commitment_type: row.commitment_type,
+    item_need_id: row.item_need_id,
+    donor_name: row.donor_name,
+    donor_email: row.donor_email,
+    donor_phone: row.donor_phone,
+    amount: row.amount == null ? null : asNumber(row.amount),
+    quantity: row.quantity == null ? null : asNumber(row.quantity),
+    status: row.status,
+    created_at: row.created_at,
+  }))
+  const itemsNeeded = needs.reduce((sum, need) => sum + need.quantity_needed, 0)
+  return {
+    organizationName: org.name,
+    campaign: mapCampaign(data),
+    summary: summarize(
+      id,
+      itemsNeeded,
+      pledges.map((pledge) => ({
+        campaign_id: id,
+        commitment_type: pledge.commitment_type,
+        amount: pledge.amount,
+        quantity: pledge.quantity,
+        status: pledge.status,
+      })),
+    ),
+    needs,
+    pledges,
+    updates: (updateResult.data ?? []) as OwnerUpdate[],
+  }
+}
+
+export async function updateCommitmentStatus(id: string, status: CommitmentStatus) {
+  const { error } = await getSupabase().from('commitments').update({ status }).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+export async function publishCampaignUpdate(campaignId: string, draft: { title: string; body: string; image_url: string }) {
+  const { data, error: userError } = await getSupabase().auth.getUser()
+  if (userError || !data.user) throw new Error('Sign in again before posting an update.')
+  const { error } = await getSupabase().from('campaign_updates').insert({
+    campaign_id: campaignId,
+    title: draft.title.trim(),
+    body: draft.body.trim(),
+    image_url: draft.image_url.trim() || null,
+    created_by: data.user.id,
+  })
   if (error) throw new Error(error.message)
 }

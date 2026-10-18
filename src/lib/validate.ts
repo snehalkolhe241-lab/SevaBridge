@@ -132,6 +132,16 @@ export function validateCampaign(draft: CampaignDraft, publishing: boolean) {
   return errors
 }
 
+export function validateUpdate(draft: { title: string; body: string; image_url: string }) {
+  const errors: Record<string, string> = {}
+  const title = draft.title.trim()
+  const body = draft.body.trim()
+  if (title.length < 1 || title.length > 120) errors.title = 'Enter a title (up to 120 characters).'
+  if (body.length < 1 || body.length > 5000) errors.body = 'Enter the update (up to 5000 characters).'
+  if (draft.image_url.trim().length > 500) errors.image_url = 'The image address is too long.'
+  return errors
+}
+
 function selfCheck() {
   const base: PledgeDraft = {
     commitmentType: 'money',
@@ -188,8 +198,13 @@ function selfCheck() {
     },
     true,
   )
+  const updateOk = validateUpdate({ title: 'Opened', body: 'The campaign is open.', image_url: '' })
+  const updateBad = validateUpdate({ title: '', body: '', image_url: '' })
   if (Object.keys(campaignOk).length > 0 || !campaignBad.title || !campaignBad.money_goal) {
     throw new Error('Campaign validation self-check failed')
+  }
+  if (Object.keys(updateOk).length > 0 || !updateBad.title || !updateBad.body) {
+    throw new Error('Update validation self-check failed')
   }
 }
 
