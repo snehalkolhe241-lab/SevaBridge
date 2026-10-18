@@ -1,25 +1,34 @@
-# SevaBridge — Implementation Plan (Phase 0)
+# SevaBridge — Implementation Plan
 
-**Status:** planning only. No application code until this plan is approved.  
-**Source of truth:** `project_context_sevabridge.md`  
-**Estimate:** about 4 hours of implementation after approval. That is an estimate. If time slips, cut polish from the list in [Risks and scope-cut order](#7-risks-and-scope-cut-order). Do not cut donor privacy, pledge status rules, or the core workflow.
+**Status:** Phase 1 source is written and not yet installed or verified. Visual direction was revised on 18 October 2026. Do not start a UI redesign until this revision is approved.  
+**Source of truth:** `project_context_sevabridge.md` for product scope. `DESIGN_REFERENCE_AUDIT.md` for visual decisions.  
+**Estimate:** about 4 hours of implementation. That is an estimate. If time slips, cut polish from [Risks and scope-cut order](#7-risks-and-scope-cut-order). Do not cut donor privacy, pledge status rules, or the core workflow.
+
+## Where the work stands
+
+| State | Items |
+| --- | --- |
+| Done in source | Vite config, `package.json`, routes for all eight pages, design tokens, shared controls, public and NGO shells, placeholder pages, lazy Supabase client, entity types, `.env.example`, `.gitignore`, README |
+| Written, not verified | `npm install` was interrupted. There is no `node_modules` and no production build. The app has not been opened in a browser |
+| Leave as-is until data exists | Route table, `RequireAuth` (always logged out), `types.ts`, `src/lib/supabase.ts`, form and progress components |
+| Adjust after this revision is approved | Tokens (card radius, one webfont), public landing hierarchy, then a shared campaign card when Phase 3 has records. Do not throw away the shells |
+| Not started | SQL, RLS, live queries, pledge insert, NGO sign-in, fulfilment, deploy |
 
 ---
 
 ## 1. Workspace state
 
-Present and left untouched:
+Present:
 
-- `README.md` — starter-pack handoff, not an app README yet
-- `project_context_sevabridge.md`
-- `PHASE_0_CURSOR_PROMPT.md`
-- `design/references/fundup-campaign-cards-reference.png`
-- `design/references/fundup-full-dashboard-reference.png`
-- `design/references/donation-form-functional-reference.png`
+- Planning: `project_context_sevabridge.md`, `PHASE_0_CURSOR_PROMPT.md`, `IMPLEMENTATION_PLAN.md`, `DESIGN_REFERENCE_AUDIT.md`
+- Local screenshots in `design/references/`
+- App source under `src/`, plus `index.html`, `package.json`, `tsconfig.json`, `vite.config.ts`, `public/favicon.svg`, `public/fallback-cover.svg`
+- `.env.example` and `.gitignore`
+- `README.md` with local run steps
 
-Not present: `package.json`, `src/`, Supabase project files, `.env`, migrations, or any application code.
+Not present: `node_modules`, `package-lock.json`, `.env.local`, `supabase/migration.sql`, or a Supabase project.
 
-Local toolchain: Node `v24.19.0`, npm `11.17.0`. That is enough for Phase 1.
+Local toolchain: Node `v24.19.0`, npm `11.17.0`.
 
 Blockers before Phase 1 can talk to a database (not before scaffolding):
 
@@ -50,7 +59,16 @@ Out of product scope for v1: payments, donor accounts, NGO self-registration, mu
 
 ---
 
-## 3. Design-reference analysis
+## 3. Design direction
+
+Live notes are in `DESIGN_REFERENCE_AUDIT.md`. Short version:
+
+- Public pages learn from Give.do: photography first, a short headline, category navigation as text, no impact statistics.
+- Campaign cards learn from Ketto’s list cards: photo, title, two honest figures, a thin received-progress bar, one action. The Ketto story page and donate form were not opened, so the detail layout still comes from the product requirements.
+- The NGO console keeps the FundUp shell already built (sidebar, top bar, dense main area). Bloomerang’s public site is a marketing page, and its product tour is behind a lead form. It is not a template for our console.
+- Palette stays blue and white. Primary is `#3E63D4` so button and link text clear 4.5:1. Card radius 12px. Control radius 8px. One sans family.
+
+## 3a. Earlier reference notes
 
 Tokens to start from (Phase 1 may darken the blue if white-on-blue or blue-on-white text fails WCAG AA for normal text; the given primary is a medium blue and may be short of 4.5:1):
 
@@ -269,6 +287,7 @@ SevaBridge/
       ProgressBar.tsx
       EmptyState.tsx
       Modal.tsx
+      CampaignCard.tsx              # added in Phase 3, shared by public and NGO lists
     layouts/PublicLayout.tsx
     layouts/NgoLayout.tsx
     features/public/LandingPage.tsx
@@ -291,28 +310,29 @@ SevaBridge/
 
 Each phase ends with the app still building. Time is a working estimate for one person with the agent, after this plan is approved.
 
-### Phase 1 — Foundation (about 30 minutes)
+### Phase 1 — Foundation (source written; install and check still open)
 
 **Objective.** Runnable Vite app, routes that render titles, design tokens, shared controls, Supabase client wired but unused.
 
-**Tasks.**
+**Already in the tree. Do not rewrite.**
 
-- Scaffold React + Vite + TypeScript in this folder without deleting the markdown, design references, or this plan.
-- Add `react-router-dom`, `@supabase/supabase-js`, `lucide-react`.
-- Add tokens, global styles, the shared components, both layouts, and route placeholders for all eight pages.
-- Add `src/lib/supabase.ts`, `src/types.ts`, `.env.example`, `.gitignore` for `.env` and `.env.local`.
-- Darken `--color-primary` if a quick contrast check fails for button labels or link text.
-- Rewrite `README.md` with local commands and the env names. Keep secrets out.
+- Vite + React + TypeScript config, `package.json` with `react-router-dom`, `@supabase/supabase-js`, and `lucide-react`.
+- Tokens, global styles, `Button`, `Field`, `Badge`, `ProgressBar`, `EmptyState`, `Modal`, both layouts, and placeholder pages for all eight routes.
+- `src/lib/supabase.ts` (lazy client so missing env does not crash the shell), `src/types.ts`, `.env.example`, `.gitignore`, README.
+- Primary blue set to `#3E63D4` after a contrast check. `RequireAuth` sends every protected URL to `/ngo/login`.
 
-**Files.** Everything under `src/`, plus `index.html`, `package.json`, `tsconfig.json`, `vite.config.ts`, `.env.example`, `.gitignore`, `README.md`, `public/fallback-cover.svg`.
+**Remaining after this revision is approved. Small pass, not a new app.**
 
-**Depends on.** This plan’s approval. Node is already present.
+- `npm install`, then `npm run build`.
+- Open the public shell and confirm `/ngo/dashboard` redirects to login.
+- Token-only adjustments from the audit: `--radius-card: 12px`, `--radius-control: 8px`, and Source Sans 3 as the first font in `--font-sans`. Apply those in `tokens.css` and `global.css`. Do not rebuild the pages.
+- Leave placeholder copy. Do not invent campaigns so the landing page looks finished.
 
-**Done when.** `npm run dev` shows the public shell and the NGO shell. `npm run build` passes. Unauthenticated `/ngo/dashboard` redirects to login (the guard can be a stub that treats “no session” as logged out). No page pretends to have saved data.
+**Done when.** `npm run dev` shows the public shell and the login card. `npm run build` passes. Unauthenticated `/ngo/dashboard` redirects to login. No page pretends to have saved data. The NGO shell can be reviewed by reading `NgoLayout` and, if needed, a temporary look that is reverted so the redirect still holds.
 
-**Failure.** If the scaffold would overwrite starter files, stop and scaffold into `src/` manually. If the build fails, fix types before Phase 2; do not stack features on a red build.
+**Failure.** If install or the build fails, fix that before Phase 2. Do not restyle the app to get a green build.
 
-**Defer.** Real queries, SQL, seed data, deploy.
+**Defer.** Real queries, SQL, seed data, deploy, a new campaign-card component.
 
 ### Phase 2 — Schema, RLS, aggregates (about 45 minutes)
 
@@ -342,12 +362,13 @@ Each phase ends with the app still building. Time is a working estimate for one 
 **Tasks.**
 
 - Load active campaigns, public org fields, needs, published updates, and aggregates.
-- Directory search (title, summary, NGO name) and filters (category, mode, status). Default status `active`. No-results state clears filters.
-- Detail: pledged and received money, per-need received counts, updates newest first, not-found and closed states.
+- Add one `CampaignCard`: 16/10 photo (fallback SVG if the URL fails), category, title, NGO, one-line summary, and a received-progress line. Use it on the landing page, directory, and later the NGO list. No supporter avatars.
+- Directory: search (title, summary, NGO name) and filters for category, mode, and status. Default status `active`. Category filters are text, not an icon row. No-results state clears filters.
+- Detail: cover, story, pledged and received money, per-need received counts, updates newest first, not-found and closed states. Pledge panel is one card with a blue submit button and the offline-fulfilment sentence.
 - Pledge form for items, money, or both. Client validation, then insert. Success copy says the pledge was recorded and fulfilment is offline.
-- Landing uses the same cards and the latest published updates. Empty states when the database has no rows.
+- Landing leads with real cards when records exist, then category links, updates, and the three steps. Empty states when the database has no rows.
 
-**Files.** `features/public/*`, `lib/format.ts`, `lib/validate.ts`, small additions to `types.ts` if a query shape was missing.
+**Files.** `features/public/*`, `src/components/CampaignCard.tsx`, `lib/format.ts`, `lib/validate.ts`, small additions to `types.ts` if a query shape was missing.
 
 **Depends on.** Phase 2 applied and verified.
 
@@ -406,6 +427,7 @@ Each phase ends with the app still building. Time is a working estimate for one 
 **Tasks.**
 
 - Walk the checklist. Fix the smallest break.
+- Check the public pages against `DESIGN_REFERENCE_AUDIT.md`: photo cards, blue buttons, no fake metrics. Check the console still matches the FundUp shell, not the Bloomerang marketing page.
 - Check mobile: public nav, stacked cards, pledge form, NGO nav, commitment actions.
 - `npm run build` clean. No service-role string in the repo.
 - Optional: Vercel (or similar) with the two `VITE_` env vars. Skip deploy if the checklist is red.

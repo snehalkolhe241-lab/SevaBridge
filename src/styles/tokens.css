@@ -1,0 +1,30 @@
+:root {
+  /* #4E78E5 is about 4.1:1 on white. #3E63D4 clears 4.5:1 for button labels and links. */
+  --color-bg: #f3f6f8;
+  --color-surface: #ffffff;
+  --color-ink: #192332;
+  --color-muted: #5c6b7a;
+  --color-primary: #3e63d4;
+  --color-primary-hover: #3457c8;
+  --color-border: #dde5ed;
+  --color-soft-blue: #eaf0ff;
+  --color-success: #1b6b45;
+  --color-success-soft: #e5f4ec;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #fbf3e4;
+  --color-danger: #9b3333;
+  --color-danger-soft: #f8eaea;
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius: var(--radius-control);
+  --content: 1080px;
+  --sidebar: 220px;
+}

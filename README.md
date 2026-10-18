@@ -1,21 +1,31 @@
-# SevaBridge Starter Pack
+# SevaBridge
 
-This pack is the planning handoff for building SevaBridge from an empty workspace. It intentionally contains no application source code.
+NGO campaign and pledge tracker. Visitors discover needs and record item or money pledges. There is no payment gateway. The NGO confirms handover offline.
 
-## Contents
+This is a student prototype. Planning notes live in `project_context_sevabridge.md` and `IMPLEMENTATION_PLAN.md`.
 
-- `project_context_sevabridge.md` — product requirements, visual direction, pages, workflows, data model, security expectations and acceptance criteria.
-- `PHASE_0_CURSOR_PROMPT.md` — paste this into Cursor Agent to produce an implementation plan without building the app yet.
-- `design/references/` — the three supplied screenshots, renamed for clear use in prompts.
+## Run locally
 
-## How to begin
+Requires Node.js 20 or newer.
 
-1. Extract this folder into the directory you want to use as your project.
-2. Open the extracted `SevaBridge_Starter_Pack` folder in Cursor as the workspace. You can later rename the folder to `SevaBridge` if you prefer.
-3. Open `PHASE_0_CURSOR_PROMPT.md`, copy its full contents into Cursor Agent, and send it.
-4. Cursor should inspect the context and image files, then create only `IMPLEMENTATION_PLAN.md`.
-5. Review the plan together before allowing Cursor to start Phase 1.
+```bash
+npm install
+npm run dev
+```
 
-## Important
+Open the URL Vite prints (usually `http://localhost:5173`).
 
-The reference images are guidance, not assets to copy into the live public website. The FundUp dashboard images guide layout and hierarchy; the pink form image guides form clarity only. Use SevaBridge's own brand and the blue/white visual system described in the context.
+```bash
+npm run build
+```
+
+The public pages and the NGO login screen run without a database. Protected NGO pages redirect to login until sign-in is connected.
+
+## Environment
+
+Copy `.env.example` to `.env.local` when you have a Supabase project:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Do not commit real keys. Do not put the service-role key in frontend env.
