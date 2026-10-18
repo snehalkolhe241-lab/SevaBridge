@@ -485,6 +485,12 @@ a:hover {
   border-bottom: 1px solid var(--color-border);
 }
 
+.ngo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .page-heading {
   display: flex;
   flex-wrap: wrap;

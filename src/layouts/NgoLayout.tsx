@@ -1,7 +1,16 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Megaphone } from 'lucide-react'
+import { Button } from '../components/Button'
+import { getSupabase } from '../lib/supabase'
 
 export function NgoLayout() {
+  const navigate = useNavigate()
+
+  async function signOut() {
+    navigate('/')
+    await getSupabase().auth.signOut()
+  }
+
   return (
     <div className="ngo-shell">
       <aside className="ngo-sidebar">
@@ -22,9 +31,14 @@ export function NgoLayout() {
       <div className="ngo-main">
         <header className="ngo-topbar">
           <p className="wordmark">Campaign console</p>
-          <Link className="btn btn-primary" to="/ngo/campaigns/new">
-            New campaign
-          </Link>
+          <div className="ngo-actions">
+            <Link className="btn btn-primary" to="/ngo/campaigns/new">
+              New campaign
+            </Link>
+            <Button variant="secondary" onClick={signOut}>
+              Sign out
+            </Button>
+          </div>
         </header>
         <main id="main" className="wrap page">
           <Outlet />

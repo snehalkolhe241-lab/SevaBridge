@@ -17,10 +17,12 @@ export function CampaignCard({
   campaign,
   organizationName,
   summary,
+  to,
 }: {
   campaign: Campaign
   organizationName: string
   summary: CampaignSummary
+  to?: string
 }) {
   const [src, setSrc] = useState(campaign.cover_image_url || FALLBACK)
   const showMoney = campaign.campaign_mode !== 'items'
@@ -28,7 +30,7 @@ export function CampaignCard({
 
   return (
     <article className="campaign-card">
-      <Link to={`/campaigns/${campaign.id}`}>
+      <Link to={to ?? `/campaigns/${campaign.id}`}>
         <img
           src={src}
           alt=""
@@ -49,6 +51,7 @@ export function CampaignCard({
           <p className="muted">{CAMPAIGN_MODE_LABELS[campaign.campaign_mode]}</p>
           {showMoney ? <MoneyProgress campaign={campaign} summary={summary} /> : null}
           {showItems ? <ItemProgress summary={summary} /> : null}
+          {to ? <span className="btn btn-secondary">Manage</span> : null}
         </div>
       </Link>
     </article>

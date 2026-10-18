@@ -19,7 +19,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 npm run build
 ```
 
-Public pages load campaigns when `.env.local` is set. The NGO login screen does not sign in yet. Protected NGO pages redirect to login.
+Public pages load campaigns when `.env.local` is set. NGO pages require the demo account created in Supabase. Logged-out visits redirect to login.
 
 ## Environment
 
