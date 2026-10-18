@@ -4,5 +4,7 @@ dist/
 .env.*
 !.env.example
 *.local
+# real Auth user id; copy supabase/seed.example.sql to create it
+supabase/seed.sql
 .DS_Store
 Thumbs.db
