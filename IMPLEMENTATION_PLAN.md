@@ -334,9 +334,11 @@ Each phase ends with the app still building. Time is a working estimate for one 
 
 **Defer.** Real queries, SQL, seed data, deploy, a new campaign-card component.
 
-### Phase 2 — Schema, RLS, aggregates (about 45 minutes)
+### Phase 2 — Schema, RLS, aggregates (SQL written; not applied yet)
 
 **Objective.** Five tables, constraints, the two aggregate functions, and grants that match section 4, applied only after a human reads the SQL.
+
+`supabase/migration.sql` and `supabase/seed.sql` are in the repo. The seed refuses to run until its placeholder user id is replaced. Nothing has been executed against a Supabase project.
 
 **Tasks.**
 
