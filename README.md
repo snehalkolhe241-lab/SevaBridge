@@ -19,7 +19,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 npm run build
 ```
 
-The public pages and the NGO login screen run without a database. Protected NGO pages redirect to login until sign-in is connected.
+Public pages load campaigns when `.env.local` is set. The NGO login screen does not sign in yet. Protected NGO pages redirect to login.
 
 ## Environment
 
@@ -40,9 +40,7 @@ Do this once, in a Supabase project, after you have read `supabase/migration.sql
 4. Copy `supabase/seed.example.sql` to `supabase/seed.sql`. Replace the placeholder UUID with that user id. Run `supabase/seed.sql` in the SQL editor. `seed.sql` is gitignored.
 5. Project Settings → API. Copy the project URL and the anon key into `.env.local`. Leave the service-role key on the Supabase site.
 
-Restart `npm run dev` after saving `.env.local`. The pages still do not load campaigns until the next phase. This step only creates the database.
-
-When a later phase reads organisations, list the columns. Do not use `select *` on `organizations`, because `owner_user_id` is not granted to the browser.
+Restart `npm run dev` after saving `.env.local`. The public pages then read active campaigns. Organisation queries must name their columns. `select *` on `organizations` fails because `owner_user_id` is not granted to the browser.
 
 ### Checks
 

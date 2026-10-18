@@ -25,6 +25,37 @@ export const COMMITMENT_STATUS_LABELS: Record<CommitmentStatus, string> = {
   cancelled: 'Cancelled',
 }
 
+export const CAMPAIGN_MODE_LABELS: Record<CampaignMode, string> = {
+  items: 'Items',
+  money: 'Money',
+  both: 'Items and money',
+}
+
+/** Columns the browser may read. `owner_user_id` is not one of them. */
+export type PublicOrganization = {
+  id: string
+  name: string
+  description: string | null
+  public_contact_email: string | null
+  logo_url: string | null
+  created_at: string
+}
+
+export type CampaignSummary = {
+  campaign_id: string
+  money_pledged: number
+  money_received: number
+  items_needed: number
+  items_pledged: number
+  items_received: number
+}
+
+export type ItemNeedProgress = {
+  item_need_id: string
+  quantity_pledged: number
+  quantity_received: number
+}
+
 export type Organization = {
   id: string
   owner_user_id: string

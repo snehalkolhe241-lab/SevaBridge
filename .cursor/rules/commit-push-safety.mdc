@@ -1,0 +1,22 @@
+---
+description: Before giving commit or push commands, keep secret files out of Git
+alwaysApply: true
+---
+
+# Commit and push commands
+
+When the user asks for commit or push commands, check the working tree before writing them. Do not run `git commit` or `git push` unless they explicitly ask you to run those commands.
+
+1. Run `git status` and `git check-ignore` on `.env`, `.env.local`, and `supabase/seed.sql`.
+2. If a file with a real key, service-role key, or Auth user id is not ignored, add it to `.gitignore` before giving the commands. `supabase/seed.example.sql` is the commitable seed. `supabase/seed.sql` is local.
+3. Give commands that cannot add those files. `git add .` is acceptable only after `git status` shows they are ignored and not staged.
+4. Tell the user which paths the commit will include, and name any ignored secret file that must stay off the remote.
+5. Never print secret values, and never suggest `git add -f` on an ignored secret.
+
+```powershell
+# Safe after the ignore check passes
+git add .
+git status
+git commit -m "why this change exists"
+git push
+```
