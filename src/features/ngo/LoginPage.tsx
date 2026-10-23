@@ -25,6 +25,10 @@ export function LoginPage() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setNotice('')
+    if (!email.trim() || !password) {
+      setNotice('Enter your email and password.')
+      return
+    }
     setPending(true)
     try {
       const { error } = await getSupabase().auth.signInWithPassword({ email: email.trim(), password })
@@ -48,7 +52,7 @@ export function LoginPage() {
           SevaBridge
         </Link>
         <h1>NGO login</h1>
-        <p className="form-note">Demo accounts are created in Supabase. There is no public registration.</p>
+        <p className="form-note">This sign-in is for NGO accounts. There is no public registration.</p>
         <Field
           label="Email"
           name="email"

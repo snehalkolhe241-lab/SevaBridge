@@ -30,7 +30,7 @@ export function NgoLayout() {
       </aside>
       <div className="ngo-main">
         <header className="ngo-topbar">
-          <p className="wordmark">Campaign console</p>
+          <p className="wordmark">Organisation workspace</p>
           <div className="ngo-actions">
             <Link className="btn btn-primary" to="/ngo/campaigns/new">
               New campaign

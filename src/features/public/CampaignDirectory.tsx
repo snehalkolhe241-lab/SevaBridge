@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CampaignCard } from '../../components/CampaignCard'
 import { EmptyState } from '../../components/EmptyState'
+import { presentCampaign, presentOrgName } from '../../data/campaignCopy'
 import { listPublicCampaigns, type ListedCampaign } from '../../lib/publicCampaigns'
 import {
   CAMPAIGN_MODE_LABELS,
@@ -73,18 +74,27 @@ export function CampaignDirectory() {
     setParams(next, { replace: true })
   }
 
-  const visible = (rows ?? []).filter((row) => {
-    if (!query) return true
-    const haystack = `${row.campaign.title} ${row.campaign.summary} ${row.organization.name}`.toLowerCase()
-    return haystack.includes(query)
-  })
+  const visible = (rows ?? [])
+    .map((row) => ({
+      ...row,
+      campaign: presentCampaign(row.campaign),
+      organization: { ...row.organization, name: presentOrgName(row.organization.name) },
+    }))
+    .filter((row) => {
+      if (!query) return true
+      const haystack = `${row.campaign.title} ${row.campaign.summary} ${row.organization.name}`.toLowerCase()
+      return haystack.includes(query)
+    })
   const filtered = Boolean(query || category || mode || params.get('status'))
 
   return (
     <div className="wrap page stack">
       <div>
         <h1>Campaigns</h1>
-        <p className="lede">Find a community need and open it to see how to help.</p>
+        <p className="lede">
+          Find a community need and open it to see how to help. Opening a campaign lets you record a pledge. It
+          does not take a payment.
+        </p>
       </div>
       <form className="filters" role="search" onSubmit={(event) => event.preventDefault()}>
         <div className="field">

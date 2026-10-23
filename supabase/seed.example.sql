@@ -44,23 +44,24 @@ begin
   insert into public.organizations (owner_user_id, name, description, public_contact_email)
   values (
     demo_user,
-    'SevaBridge Demo Collective',
-    'Sample organisation for a student demo. This is not a real NGO, and the campaigns are not real appeals.',
+    'Setu Community Collective',
+    'Fictional organisation for the SevaBridge prototype. It is not a registered NGO, and these campaigns are not real appeals.',
     null
   )
   returning id into org_id;
 
   insert into public.campaigns (
-    organization_id, title, summary, description, category, campaign_mode, status
+    organization_id, title, summary, description, category, campaign_mode, status, cover_image_url
   )
   values (
     org_id,
-    'Demo: notebooks for an after-school class',
-    'Sample campaign. Visitors can pledge notebooks or pencils. Nothing here is a real request.',
-    'This demonstration campaign asks for stationery. Handover would happen offline with the organisation. Do not treat the totals as real donations.',
+    'Notebooks for an after-school class in Nagpur',
+    'An after-school class in Nagpur is asking for 40 notebooks and 100 pencils.',
+    'The class meets after school in Nagpur and is short of stationery. The request is 40 notebooks and 100 pencils, handed over in person. A pledge is recorded here and counts as received only after the organisation confirms it. This is an illustrative campaign for the SevaBridge prototype, not a real appeal.',
     'education',
     'items',
-    'active'
+    'active',
+    '/images/supplies.jpg'
   )
   returning id into books_id;
 
@@ -70,17 +71,18 @@ begin
     (books_id, 'Pencils', 'Ordinary pencils', 100, 'pieces');
 
   insert into public.campaigns (
-    organization_id, title, summary, description, category, campaign_mode, money_goal, status
+    organization_id, title, summary, description, category, campaign_mode, money_goal, status, cover_image_url
   )
   values (
     org_id,
-    'Demo: rice purchase fund',
-    'Sample money campaign. A pledge records an intended amount and does not transfer money.',
-    'This demonstration campaign has a monetary goal so the received-versus-pledged display can be shown. SevaBridge does not collect the money.',
+    'A week of meals for a community kitchen',
+    'A kitchen in Pune is raising ₹25,000 for rice, dal and fuel for one week of meals.',
+    'The kitchen serves a weekday lunch. This goal is for rice, dal, oil and cooking fuel for about a week. SevaBridge does not collect the money. The organisation receives it in person. This is an illustrative campaign for the SevaBridge prototype, not a real appeal.',
     'essentials',
     'money',
     25000,
-    'active'
+    'active',
+    '/images/meals.jpg'
   )
   returning id into rice_id;
 
@@ -89,9 +91,9 @@ begin
   )
   values (
     org_id,
-    'Demo draft: neighbourhood clinic day',
-    'Sample draft. This campaign must stay off the public site.',
-    'Draft used to check that unpublished campaigns are not publicly readable.',
+    'Essential supplies for a rural health camp',
+    'Unpublished draft for hygiene kits and basic supplies. It must stay off the public site.',
+    'A community health day would ask for hygiene kits and other non-prescription supplies. This row is a draft and is not a public campaign. It is illustrative, not a real appeal.',
     'healthcare',
     'both',
     5000,
@@ -101,8 +103,8 @@ begin
   insert into public.campaign_updates (campaign_id, title, body, created_by)
   values (
     books_id,
-    'Demo update: campaign opened',
-    'Sample update for the public campaign page. No activity has taken place.',
+    'The after-school class list is open',
+    'The campaign is published so a pledge can be recorded. No distribution has been organised. This is a prototype note.',
     demo_user
   );
 end $$;

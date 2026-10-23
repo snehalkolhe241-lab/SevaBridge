@@ -23,13 +23,14 @@ p {
 
 h1 {
   font-size: 2rem;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
 }
 
 h2 {
-  font-size: 1.25rem;
-  line-height: 1.3;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 
 h3 {
@@ -273,10 +274,10 @@ a:hover {
 .public-footer-inner {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding-block: var(--space-5);
+  padding-block: var(--space-3);
 }
 
 .public-footer-inner p {
@@ -319,6 +320,19 @@ a:hover {
   color: var(--color-primary);
 }
 
+.public-nav a.nav-cta {
+  background: var(--color-primary);
+  color: #fff;
+  text-decoration: none;
+  border-radius: var(--radius-control);
+  padding: 8px 14px;
+}
+
+.public-nav a.nav-cta:hover {
+  background: var(--color-primary-hover);
+  color: #fff;
+}
+
 .public-header.is-open .public-header-inner {
   flex-wrap: wrap;
   align-items: flex-start;
@@ -333,10 +347,20 @@ a:hover {
   padding-bottom: var(--space-4);
 }
 
+.home {
+  display: grid;
+  gap: var(--space-7);
+}
+
 .hero {
   display: grid;
   gap: var(--space-5);
   align-items: center;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  max-width: 16ch;
 }
 
 .hero img {
@@ -363,6 +387,10 @@ a:hover {
   list-style: none;
 }
 
+.steps {
+  counter-reset: step;
+}
+
 .category-list a,
 .steps li {
   background: var(--color-surface);
@@ -378,14 +406,10 @@ a:hover {
   text-decoration: none;
 }
 
-.steps {
-  list-style: decimal;
-  padding-left: 1.25rem;
-}
-
-.steps li {
-  list-style: decimal;
-  padding-left: var(--space-2);
+.steps li h3::before {
+  counter-increment: step;
+  content: counter(step) ". ";
+  color: var(--color-primary);
 }
 
 .steps p {
@@ -501,7 +525,7 @@ a:hover {
 
 .metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: var(--space-3);
   margin: 0;
 }
@@ -522,6 +546,14 @@ a:hover {
   margin: var(--space-2) 0 0;
   font-size: 1.5rem;
   font-weight: 600;
+}
+
+.metrics dd span {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
 }
 
 @media (min-width: 768px) {
@@ -547,12 +579,17 @@ a:hover {
     padding-top: var(--space-6);
   }
 
-  .category-list {
+  .category-list,
+  .steps {
     grid-template-columns: 1fr 1fr;
   }
 
+  .invite {
+    grid-template-columns: 1fr auto;
+  }
+
   .metrics {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -618,6 +655,7 @@ a:hover {
 }
 
 .campaign-card-body {
+  flex: 1;
   padding: var(--space-4);
 }
 
@@ -628,9 +666,73 @@ a:hover {
   overflow: hidden;
 }
 
+.eyebrow,
+.byline,
+.card-progress {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.eyebrow {
+  font-weight: 600;
+}
+
+.byline {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.card-action {
+  margin-top: auto;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.back-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.invite {
+  display: grid;
+  gap: var(--space-4);
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-6);
+}
+
+.invite p,
+.trust p,
+.faq p {
+  max-width: 62ch;
+  color: var(--color-muted);
+  margin-top: var(--space-3);
+}
+
+.faq {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.faq details {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-4);
+}
+
+.faq summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .card-meta {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
 }
 
@@ -653,6 +755,8 @@ a:hover {
 }
 
 .story {
+  max-width: 65ch;
+  line-height: 1.65;
   white-space: pre-wrap;
 }
 
@@ -700,14 +804,34 @@ a:hover {
 }
 
 @media (min-width: 768px) {
-  .card-grid,
+  .card-grid:not(.manage-grid),
   .filters {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .manage-grid .campaign-card a {
+    flex-direction: row;
+  }
+
+  .manage-grid .campaign-card img {
+    width: 220px;
+    height: auto;
+    align-self: stretch;
+    aspect-ratio: 16 / 10;
+    flex: none;
   }
 }
 
 @media (min-width: 960px) {
-  .card-grid {
+  .card-grid:not(.manage-grid) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .category-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .steps {
     grid-template-columns: repeat(3, 1fr);
   }
 

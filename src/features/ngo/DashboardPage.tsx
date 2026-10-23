@@ -1,15 +1,24 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { CampaignCard } from '../../components/CampaignCard'
 import { EmptyState } from '../../components/EmptyState'
+import { presentCampaign, presentOrgName } from '../../data/campaignCopy'
 import { formatInr } from '../../lib/format'
 import { loadOwnOrganization, loadOwnerCampaigns, metricsFor, type OwnerCampaign, type OwnerMetrics } from '../../lib/ngoCampaigns'
 
 const emptyMetrics: OwnerMetrics = {
   activeCampaigns: 0,
   pendingCommitments: 0,
+  confirmedCommitments: 0,
+  fulfilledCommitments: 0,
+  cancelledCommitments: 0,
+  moneyPledged: 0,
   moneyReceived: 0,
+  itemsPledged: 0,
   itemsReceived: 0,
+}
+
+function inr(value: number) {
+  return formatInr(value).replace(/\.00$/, '')
 }
 
 export function DashboardPage() {
@@ -27,11 +36,11 @@ export function DashboardPage() {
           setCampaigns([])
           return
         }
-        setName(org.name)
+        setName(presentOrgName(org.name))
         const loaded = await loadOwnerCampaigns(org.id)
         if (!active) return
         setCampaigns(loaded.campaigns)
-        setMetrics(metricsFor(loaded.campaigns, loaded.pending))
+        setMetrics(metricsFor(loaded.campaigns, loaded.counts))
       })
       .catch((reason: unknown) => {
         if (!active) return
@@ -42,29 +51,40 @@ export function DashboardPage() {
     }
   }, [])
 
-  const figures = [
-    ['Active campaigns', String(metrics.activeCampaigns)],
-    ['Pending commitments', String(metrics.pendingCommitments)],
-    ['Money received', formatInr(metrics.moneyReceived)],
-    ['Items received', String(metrics.itemsReceived)],
+  const figures: { label: string; value: string; note: string }[] = [
+    { label: 'Active campaigns', value: String(metrics.activeCampaigns), note: 'Published and open' },
+    { label: 'Pending pledges', value: String(metrics.pendingCommitments), note: 'Not yet confirmed' },
+    { label: 'Money pledged', value: inr(metrics.moneyPledged), note: 'Promised, not received' },
+    { label: 'Money received', value: inr(metrics.moneyReceived), note: 'Confirmed after handover' },
+    { label: 'Items pledged', value: String(metrics.itemsPledged), note: 'Promised, not received' },
+    { label: 'Items received', value: String(metrics.itemsReceived), note: 'Confirmed after handover' },
   ]
 
   return (
     <div className="stack">
       <div className="page-heading">
-        <h1>{name ? name : 'Your campaigns'}</h1>
-        <Link className="btn btn-primary" to="/ngo/campaigns/new">
-          New campaign
-        </Link>
+        <div>
+          <h1>{name ? name : 'Your campaigns'}</h1>
+          <p className="form-note">A pledge is a promise. Received is what you confirm after the handover.</p>
+        </div>
       </div>
       <dl className="metrics">
-        {figures.map(([label, value]) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd>{campaigns === null ? '—' : value}</dd>
+        {figures.map((figure) => (
+          <div key={figure.label}>
+            <dt>{figure.label}</dt>
+            <dd>
+              {campaigns === null ? '—' : figure.value}
+              <span>{figure.note}</span>
+            </dd>
           </div>
         ))}
       </dl>
+      {campaigns !== null ? (
+        <p className="form-note">
+          Pledge status: {metrics.pendingCommitments} pending, {metrics.confirmedCommitments} confirmed,{' '}
+          {metrics.fulfilledCommitments} received, {metrics.cancelledCommitments} cancelled.
+        </p>
+      ) : null}
       {error ? (
         <EmptyState title="The dashboard could not be loaded">{error}</EmptyState>
       ) : campaigns === null ? (
@@ -76,11 +96,11 @@ export function DashboardPage() {
             : 'This account is not linked to an organisation.'}
         </EmptyState>
       ) : (
-        <div className="card-grid">
+        <div className="card-grid manage-grid">
           {campaigns.map((row) => (
             <CampaignCard
               key={row.campaign.id}
-              campaign={row.campaign}
+              campaign={presentCampaign(row.campaign)}
               organizationName={name}
               summary={row.summary}
               to={`/ngo/campaigns/${row.campaign.id}`}

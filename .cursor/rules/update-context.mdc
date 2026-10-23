@@ -1,0 +1,13 @@
+---
+description: Keep CONTEXT.md current at the end of each phase
+alwaysApply: true
+---
+
+# Update the progress tracker
+
+`CONTEXT.md` is the progress tracker. After a phase is implemented, update that file before telling the user the phase is done.
+
+- Change only the tracker rows, the demo-data note, and the next step. Leave the product rules in `project_context_sevabridge.md`.
+- Say what was actually run. Use **Checked** only when the phase’s “done when” checks were run. Use **Built, not fully checked** when the code and build passed but a check was skipped.
+- Name the skipped check in the “Not checked” column. Do not mark a gap as done.
+- Do not put secrets, the service-role key, or the real Auth user id in `CONTEXT.md`.

@@ -4,6 +4,7 @@ import { Button } from '../../components/Button'
 import { Badge } from '../../components/Badge'
 import { EmptyState } from '../../components/EmptyState'
 import { Modal } from '../../components/Modal'
+import { presentCampaign } from '../../data/campaignCopy'
 import { loadOwnOrganization, loadOwnerCampaigns, updateCampaignStatus } from '../../lib/ngoCampaigns'
 import { CAMPAIGN_STATUS_LABELS, type Campaign, type CampaignStatus } from '../../types'
 
@@ -41,6 +42,7 @@ export function CampaignListPage() {
   const [action, setAction] = useState<Action | null>(null)
   const [pending, setPending] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [notice, setNotice] = useState('')
 
   function load() {
     return loadOwnOrganization().then(async (org) => {
@@ -71,6 +73,9 @@ export function CampaignListPage() {
     try {
       await updateCampaignStatus(action.campaign.id, action.status)
       await load()
+      setNotice(
+        `${presentCampaign(action.campaign).title} is now ${CAMPAIGN_STATUS_LABELS[action.status].toLowerCase()}.`,
+      )
       setAction(null)
     } catch (reason) {
       setActionError(reason instanceof Error ? reason.message : 'The status could not be changed.')
@@ -83,10 +88,8 @@ export function CampaignListPage() {
     <div className="stack">
       <div className="page-heading">
         <h1>Campaigns</h1>
-        <Link className="btn btn-primary" to="/ngo/campaigns/new">
-          New campaign
-        </Link>
       </div>
+      {notice ? <p role="status">{notice}</p> : null}
       {error ? (
         <EmptyState title="Campaigns could not be loaded">{error}</EmptyState>
       ) : rows === null ? (
@@ -95,14 +98,21 @@ export function CampaignListPage() {
         <EmptyState title="No campaigns yet">Draft, active, completed, and archived campaigns will be listed here.</EmptyState>
       ) : (
         <ul className="need-list">
-          {rows.map((campaign) => (
+          {rows.map((campaign) => {
+            const shown = presentCampaign(campaign)
+            return (
             <li key={campaign.id} className="panel stack">
               <div className="page-heading">
-                <h2>{campaign.title}</h2>
+                <h2>
+                  <Link to={`/ngo/campaigns/${campaign.id}`}>{shown.title}</Link>
+                </h2>
                 <Badge tone={campaign.status === 'active' ? 'success' : 'neutral'}>{CAMPAIGN_STATUS_LABELS[campaign.status]}</Badge>
               </div>
-              <p className="muted">{campaign.summary}</p>
+              <p className="muted">{shown.summary}</p>
               <div className="ngo-actions">
+                <Link className="btn btn-secondary" to={`/ngo/campaigns/${campaign.id}`}>
+                  Open
+                </Link>
                 <Link className="btn btn-secondary" to={`/ngo/campaigns/${campaign.id}/edit`}>
                   Edit
                 </Link>
@@ -120,7 +130,8 @@ export function CampaignListPage() {
                 ))}
               </div>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
       <Modal

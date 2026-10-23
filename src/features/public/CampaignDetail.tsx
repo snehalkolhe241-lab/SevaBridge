@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { EmptyState } from '../../components/EmptyState'
 import { ProgressBar } from '../../components/ProgressBar'
 import { formatDate, formatInr } from '../../lib/format'
+import { presentCampaign, presentOrgName, presentUpdate } from '../../data/campaignCopy'
 import { loadCampaignDetail, type DetailUpdate } from '../../lib/publicCampaigns'
 import { CAMPAIGN_STATUS_LABELS, CATEGORY_LABELS, type ItemNeedProgress } from '../../types'
 import { Badge } from '../../components/Badge'
@@ -39,7 +40,7 @@ export function CampaignDetail() {
         if (!active) return
         setDetail(row)
         setMissing(!row)
-        setCover(row?.campaign.cover_image_url || FALLBACK)
+        setCover((row ? presentCampaign(row.campaign).cover_image_url : null) || FALLBACK)
       })
       .catch((reason: unknown) => {
         if (!active) return
@@ -74,7 +75,10 @@ export function CampaignDetail() {
     )
   }
 
-  const { campaign, organization, summary, needs, updates, progress } = detail
+  const campaign = presentCampaign(detail.campaign)
+  const organization = { ...detail.organization, name: presentOrgName(detail.organization.name) }
+  const { summary, needs, progress } = detail
+  const updates = detail.updates.map(presentUpdate)
   const progressByNeed = new Map(progress.map((item) => [item.item_need_id, item]))
   const open = campaign.status === 'active'
   const showMoney = campaign.campaign_mode !== 'items'
@@ -82,6 +86,9 @@ export function CampaignDetail() {
 
   return (
     <div className="wrap page stack">
+      <Link className="back-link" to="/campaigns">
+        Campaigns
+      </Link>
       <img
         className="cover"
         src={cover}

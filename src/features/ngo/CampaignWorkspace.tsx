@@ -5,6 +5,7 @@ import { Button } from '../../components/Button'
 import { EmptyState } from '../../components/EmptyState'
 import { Field } from '../../components/Field'
 import { ProgressBar } from '../../components/ProgressBar'
+import { presentCampaign, presentUpdate } from '../../data/campaignCopy'
 import { formatDate, formatInr } from '../../lib/format'
 import {
   loadWorkspace,
@@ -64,10 +65,16 @@ export function CampaignWorkspace() {
   if (missing) return <EmptyState title="Campaign not found">This campaign is not part of your organisation.</EmptyState>
   if (!workspace) return <p role="status">Loading campaign…</p>
 
+  const shown = {
+    ...workspace,
+    campaign: presentCampaign(workspace.campaign),
+    updates: workspace.updates.map(presentUpdate),
+  }
+
   return (
     <div className="stack">
       <div className="page-heading">
-        <h1>{workspace.campaign.title}</h1>
+        <h1>{shown.campaign.title}</h1>
         <Link className="btn btn-secondary" to={`/ngo/campaigns/${id}/edit`}>
           Edit campaign
         </Link>
@@ -86,10 +93,10 @@ export function CampaignWorkspace() {
           </button>
         ))}
       </div>
-      {tab === 'overview' ? <Overview workspace={workspace} /> : null}
+      {tab === 'overview' ? <Overview workspace={shown} /> : null}
       {tab === 'commitments' ? <Commitments workspace={workspace} onChanged={load} /> : null}
       {tab === 'needs' ? <Needs workspace={workspace} /> : null}
-      {tab === 'updates' ? <Updates campaignId={id} updates={workspace.updates} onPosted={load} /> : null}
+      {tab === 'updates' ? <Updates campaignId={id} updates={shown.updates} onPosted={load} /> : null}
     </div>
   )
 }
@@ -133,7 +140,8 @@ function Commitments({ workspace, onChanged }: { workspace: Workspace; onChanged
   const names = new Map(workspace.needs.map((need) => [need.id, need.item_name]))
 
   async function setStatus(pledge: OwnerPledge, status: CommitmentStatus) {
-    setSaving(pledge.id)
+    const key = `${pledge.id}:${status}`
+    setSaving(key)
     setRowError(null)
     try {
       await updateCommitmentStatus(pledge.id, status)
@@ -180,10 +188,10 @@ function Commitments({ workspace, onChanged }: { workspace: Workspace; onChanged
               <Button
                 key={status}
                 variant={status === pledge.status ? 'secondary' : 'ghost'}
-                disabled={saving === pledge.id || status === pledge.status}
+                disabled={saving.startsWith(`${pledge.id}:`) || status === pledge.status}
                 onClick={() => setStatus(pledge, status)}
               >
-                {saving === pledge.id && status !== pledge.status ? 'Saving…' : COMMITMENT_STATUS_LABELS[status]}
+                {saving === `${pledge.id}:${status}` ? 'Saving…' : COMMITMENT_STATUS_LABELS[status]}
               </Button>
             ))}
           </div>

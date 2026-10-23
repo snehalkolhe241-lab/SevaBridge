@@ -4,6 +4,7 @@ import { Button } from '../../components/Button'
 import { EmptyState } from '../../components/EmptyState'
 import { Field } from '../../components/Field'
 import { loadCampaignForEdit, loadOwnOrganization, saveCampaign } from '../../lib/ngoCampaigns'
+import { campaignCopy } from '../../data/campaignCopy'
 import { validateCampaign, type CampaignDraft, type NeedDraft } from '../../lib/validate'
 import {
   CAMPAIGN_MODE_LABELS,
@@ -182,6 +183,12 @@ export function CampaignForm() {
     <form className="stack" onSubmit={onSubmit}>
       <h1>{id ? 'Edit campaign' : 'New campaign'}</h1>
       <p className="form-note">Save a draft to keep it private. Publish when visitors should be able to pledge.</p>
+      {campaignCopy[draft.title] ? (
+        <p className="form-note">
+          Visitors see a rewritten title for this sample campaign. These fields are the stored text. Saving writes
+          what is in the form.
+        </p>
+      ) : null}
       <Field label="Title" name="title" value={draft.title} error={errors.title} onChange={(event) => set('title', event.target.value)} />
       <Field label="Summary" name="summary" value={draft.summary} error={errors.summary} onChange={(event) => set('summary', event.target.value)} />
       <div className="field">

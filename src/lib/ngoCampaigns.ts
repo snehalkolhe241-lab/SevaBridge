@@ -16,7 +16,12 @@ const CAMPAIGN_COLUMNS =
 export type OwnerMetrics = {
   activeCampaigns: number
   pendingCommitments: number
+  confirmedCommitments: number
+  fulfilledCommitments: number
+  cancelledCommitments: number
+  moneyPledged: number
   moneyReceived: number
+  itemsPledged: number
   itemsReceived: number
 }
 
@@ -53,7 +58,11 @@ export async function loadOwnOrganization(): Promise<PublicOrganization | null> 
   return null
 }
 
-export async function loadOwnerCampaigns(organizationId: string): Promise<{ campaigns: OwnerCampaign[]; pending: number }> {
+export async function loadOwnerCampaigns(organizationId: string): Promise<{
+  campaigns: OwnerCampaign[]
+  pending: number
+  counts: { pending: number; confirmed: number; fulfilled: number; cancelled: number }
+}> {
   const { data, error } = await getSupabase()
     .from('campaigns')
     .select(CAMPAIGN_COLUMNS)
@@ -62,7 +71,9 @@ export async function loadOwnerCampaigns(organizationId: string): Promise<{ camp
   if (error) throw new Error(error.message)
   const campaigns = (data ?? []).map((row) => mapCampaign(row))
   const ids = campaigns.map((campaign) => campaign.id)
-  if (ids.length === 0) return { campaigns: [], pending: 0 }
+  if (ids.length === 0) {
+    return { campaigns: [], pending: 0, counts: { pending: 0, confirmed: 0, fulfilled: 0, cancelled: 0 } }
+  }
 
   const [needsResult, pledgeResult] = await Promise.all([
     getSupabase().from('campaign_item_needs').select('campaign_id, quantity_needed').in('campaign_id', ids),
@@ -86,6 +97,12 @@ export async function loadOwnerCampaigns(organizationId: string): Promise<{ camp
       summary: summarize(campaign.id, needed.get(campaign.id) ?? 0, pledges),
     })),
     pending: pledges.filter((row) => row.status === 'pending').length,
+    counts: {
+      pending: pledges.filter((row) => row.status === 'pending').length,
+      confirmed: pledges.filter((row) => row.status === 'confirmed').length,
+      fulfilled: pledges.filter((row) => row.status === 'fulfilled').length,
+      cancelled: pledges.filter((row) => row.status === 'cancelled').length,
+    },
   }
 }
 
@@ -102,11 +119,19 @@ function summarize(campaignId: string, itemsNeeded: number, pledges: PledgeRow[]
   }
 }
 
-export function metricsFor(campaigns: OwnerCampaign[], pledgesPending: number): OwnerMetrics {
+export function metricsFor(
+  campaigns: OwnerCampaign[],
+  counts: { pending: number; confirmed: number; fulfilled: number; cancelled: number },
+): OwnerMetrics {
   return {
     activeCampaigns: campaigns.filter((row) => row.campaign.status === 'active').length,
-    pendingCommitments: pledgesPending,
+    pendingCommitments: counts.pending,
+    confirmedCommitments: counts.confirmed,
+    fulfilledCommitments: counts.fulfilled,
+    cancelledCommitments: counts.cancelled,
+    moneyPledged: campaigns.reduce((sum, row) => sum + row.summary.money_pledged, 0),
     moneyReceived: campaigns.reduce((sum, row) => sum + row.summary.money_received, 0),
+    itemsPledged: campaigns.reduce((sum, row) => sum + row.summary.items_pledged, 0),
     itemsReceived: campaigns.reduce((sum, row) => sum + row.summary.items_received, 0),
   }
 }
