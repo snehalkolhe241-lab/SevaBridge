@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { presentCampaign, presentOrgName } from '../../data/campaignCopy'
+import { presentCampaign, presentOrgName, presentUpdate } from '../../data/campaignCopy'
 import {
   causes,
   fallbackCover,
@@ -13,8 +13,8 @@ import {
   trustPoints,
   type SampleCampaign,
 } from '../../data/landingPageMockData'
-import { formatInr } from '../../lib/format'
-import { listPublicCampaigns, type ListedCampaign } from '../../lib/publicCampaigns'
+import { formatDate, formatInr } from '../../lib/format'
+import { listPublicCampaigns, listPublicUpdates, type ListedCampaign } from '../../lib/publicCampaigns'
 import { CAMPAIGN_MODE_LABELS, CATEGORY_LABELS, type Campaign, type CampaignSummary } from '../../types'
 
 const FALLBACK = landingImages.fallback
@@ -37,19 +37,78 @@ const heroSlides = [
     alt: 'Illustrative photograph of library shelves. Not a SevaBridge campaign.',
   },
 ]
-const marqueeMessages = [
-  'Small acts. Meaningful impact.',
-  'Support community needs.',
-  'Pledge essential items.',
-  'Coordinate offline handovers.',
-]
-
 function stepSlide(index: number, delta: number, count: number) {
   return (index + delta + count) % count
 }
 
 function inr(value: number) {
   return formatInr(value).replace(/\.00$/, '')
+}
+
+type Notice = { key: string; label: string; text: string; href: string | null }
+type PublicNote = { id: string; campaign_id: string; title: string; body: string }
+
+const DAY = 24 * 60 * 60 * 1000
+
+function ageMs(iso: string) {
+  const time = new Date(iso).getTime()
+  return Number.isFinite(time) ? Date.now() - time : Number.POSITIVE_INFINITY
+}
+
+function deadlineMs(dateOnly: string) {
+  const end = new Date(`${dateOnly}T23:59:59`).getTime()
+  return Number.isFinite(end) ? end - Date.now() : Number.POSITIVE_INFINITY
+}
+
+// shortcut: Just added is under 1 day, New campaign under 7 days, Urgent need is a stored deadline inside 3 days. No urgency column exists.
+function noticesFor(rows: ListedCampaign[] | null, failed: boolean, updates: PublicNote[] | null) {
+  if (rows === null) return { items: [{ key: 'loading', label: '', text: 'Loading campaign notices', href: null }], moving: false }
+  if (failed) return { items: [{ key: 'error', label: '', text: 'Campaign notices could not be loaded.', href: null }], moving: false }
+  if (rows.length === 0) {
+    return { items: [{ key: 'empty', label: '', text: 'Notices appear here when a campaign is published.', href: null }], moving: false }
+  }
+
+  const items: Notice[] = []
+  for (const row of rows) {
+    const campaign = presentCampaign(row.campaign)
+    const org = presentOrgName(row.organization.name)
+    const href = `/campaigns/${campaign.id}`
+    const left = campaign.deadline ? deadlineMs(campaign.deadline) : null
+    const age = ageMs(campaign.created_at)
+    if (left != null && left >= 0 && left <= 3 * DAY) {
+      items.push({
+        key: campaign.id,
+        label: 'Urgent need',
+        text: `${campaign.title} has a deadline of ${formatDate(campaign.deadline ?? '')}.`,
+        href,
+      })
+    } else if (age >= 0 && age <= DAY) {
+      items.push({ key: campaign.id, label: 'Just added', text: `${org} opened “${campaign.title}”.`, href })
+    } else if (age >= 0 && age <= 7 * DAY) {
+      items.push({ key: campaign.id, label: 'New campaign', text: `${org} opened “${campaign.title}”.`, href })
+    } else {
+      items.push({ key: campaign.id, label: 'Open campaign', text: `${org}: ${campaign.title}.`, href })
+    }
+    if (campaign.campaign_mode !== 'money' && row.summary.items_needed > 0) {
+      const sentence = campaign.summary.split(/(?<=\.)\s/)[0] ?? campaign.title
+      items.push({ key: `${campaign.id}-items`, label: 'Items needed', text: sentence, href })
+    }
+  }
+
+  for (const update of updates ?? []) {
+    const row = rows.find((item) => item.campaign.id === update.campaign_id)
+    if (!row) continue
+    const campaign = presentCampaign(row.campaign)
+    const shown = presentUpdate(update)
+    items.push({
+      key: update.id,
+      label: 'Campaign update',
+      text: `${shown.title} — ${campaign.title}.`,
+      href: `/campaigns/${campaign.id}`,
+    })
+  }
+
+  return { items, moving: items.length >= 2 }
 }
 
 function askLine(campaign: Campaign, summary: CampaignSummary) {
@@ -159,15 +218,71 @@ function SampleGrid({ rows }: { rows: SampleCampaign[] }) {
   )
 }
 
+function CampaignTicker({
+  rows,
+  failed,
+  updates,
+}: {
+  rows: ListedCampaign[] | null
+  failed: boolean
+  updates: PublicNote[] | null
+}) {
+  const ticker = noticesFor(rows, failed, updates)
+  const shown = ticker.moving ? [...ticker.items, ...ticker.items] : ticker.items
+  return (
+    <div className={ticker.moving ? 'landing-marquee' : 'landing-marquee is-static'} role="region" aria-label="Notices from published campaigns">
+      <div className="landing-marquee-track">
+        {shown.map((item, index) => {
+          const clone = index >= ticker.items.length
+          const body = (
+            <>
+              {item.label ? <span className="ticker-label">{item.label}</span> : null}
+              <span>{item.text}</span>
+            </>
+          )
+          if (!item.href) {
+            return (
+              <span key={`${item.key}-${index}`} className="ticker-item">
+                {body}
+              </span>
+            )
+          }
+          return (
+            <Link
+              key={`${item.key}-${index}`}
+              className="ticker-item"
+              to={item.href}
+              tabIndex={clone ? -1 : undefined}
+              aria-hidden={clone ? true : undefined}
+              data-clone={clone ? '' : undefined}
+            >
+              {body}
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export function LandingPage() {
   const [campaigns, setCampaigns] = useState<ListedCampaign[] | null>(null)
+  const [updates, setUpdates] = useState<PublicNote[] | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
     let active = true
     listPublicCampaigns({ status: 'active' })
-      .then((rows) => {
-        if (active) setCampaigns(rows.slice(0, 6))
+      .then(async (rows) => {
+        const shown = rows.slice(0, 6)
+        if (!active) return
+        setCampaigns(shown)
+        try {
+          const notes = await listPublicUpdates(shown.map((row) => row.campaign.id))
+          if (active) setUpdates(notes)
+        } catch {
+          if (active) setUpdates([])
+        }
       })
       .catch((reason: unknown) => {
         if (!active) return
@@ -252,14 +367,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <div className="landing-marquee" role="region" aria-label="SevaBridge messages">
-        <p className="sr-only">{marqueeMessages.join(' ')}</p>
-        <div className="landing-marquee-track" aria-hidden="true">
-          {[...marqueeMessages, ...marqueeMessages].map((text, index) => (
-            <span key={`${text}-${index}`}>{text}</span>
-          ))}
-        </div>
-      </div>
+      <CampaignTicker rows={campaigns} failed={Boolean(error)} updates={updates} />
 
       <section id="causes" className="landing-band">
         <div className="wrap">

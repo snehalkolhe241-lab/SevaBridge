@@ -114,6 +114,9 @@ function Overview({ workspace }: { workspace: Workspace }) {
         <>
           <p>
             Pledged {formatInr(summary.money_pledged)}. Received {formatInr(summary.money_received)}.
+            {campaign.money_goal && campaign.money_goal > 0
+              ? ` Remaining to goal ${formatInr(Math.max(campaign.money_goal - summary.money_received, 0))}.`
+              : ''}
           </p>
           {campaign.money_goal && campaign.money_goal > 0 ? (
             <ProgressBar
@@ -125,7 +128,8 @@ function Overview({ workspace }: { workspace: Workspace }) {
       ) : null}
       {showItems ? (
         <p>
-          Items pledged {summary.items_pledged}. Items received {summary.items_received} of {summary.items_needed}.
+          Items pledged {summary.items_pledged}. Items received {summary.items_received} of {summary.items_needed}. Remaining
+          to receive {Math.max(summary.items_needed - summary.items_received, 0)}.
         </p>
       ) : null}
       <p className="form-note">Received means the organisation confirmed the handover. Pledged is still only a promise.</p>

@@ -104,7 +104,7 @@ export function CampaignDetail() {
       <div>
         <h1>{campaign.title}</h1>
         <p className="lede">
-          {organization.name}
+          <span className="eyebrow">Organisation</span> {organization.name}
           {organization.public_contact_email ? ` · ${organization.public_contact_email}` : ''}
         </p>
       </div>
@@ -124,6 +124,12 @@ export function CampaignDetail() {
                   <dt>Received</dt>
                   <dd>{formatInr(summary.money_received)}</dd>
                 </div>
+                {campaign.money_goal && campaign.money_goal > 0 ? (
+                  <div>
+                    <dt>Remaining to goal</dt>
+                    <dd>{formatInr(Math.max(campaign.money_goal - summary.money_received, 0))}</dd>
+                  </div>
+                ) : null}
               </dl>
               {campaign.money_goal && campaign.money_goal > 0 ? (
                 <ProgressBar
@@ -184,7 +190,8 @@ function NeedRow({
       <h3>{need.item_name}</h3>
       {need.description ? <p className="muted">{need.description}</p> : null}
       <p>
-        Needed {need.quantity_needed} {need.unit}. Pledged {pledged}. Received {received}.
+        Needed {need.quantity_needed} {need.unit}. Pledged {pledged}. Received {received}. Remaining to receive{' '}
+        {Math.max(need.quantity_needed - received, 0)} {need.unit}.
       </p>
       {need.quantity_needed > 0 ? (
         <ProgressBar

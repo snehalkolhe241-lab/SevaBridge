@@ -113,6 +113,20 @@ export async function listPublicCampaigns(filter: {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+export async function listPublicUpdates(campaignIds: string[]) {
+  const ids = campaignIds.filter((id) => UUID.test(id))
+  if (ids.length === 0) return []
+  const { data, error } = await getSupabase()
+    .from('campaign_updates')
+    .select('id, campaign_id, title, body, published_at')
+    .in('campaign_id', ids)
+    .not('published_at', 'is', null)
+    .order('published_at', { ascending: false })
+    .limit(8)
+  if (error) throw new Error(error.message)
+  return (data ?? []) as { id: string; campaign_id: string; title: string; body: string; published_at: string }[]
+}
+
 export async function loadCampaignDetail(id: string) {
   if (!UUID.test(id)) return null
   const { data, error } = await getSupabase()

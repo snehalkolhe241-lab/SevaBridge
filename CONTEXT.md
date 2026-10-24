@@ -49,7 +49,7 @@ Do not commit `.env.local` or `supabase/seed.sql`.
 
 ## Next step
 
-The plan stops at Phase 6. Public pages and the NGO dashboard show the rewritten campaign names. The edit form still shows the stored text. Run `supabase/refresh-demo-copy.sql` in the Supabase SQL editor only if you want those names saved. Two product checks are still open. The water-bottles campaign was left active.
+The plan stops at Phase 6. Run `supabase/presentation-data.sql` once in the Supabase SQL editor. It was not applied from the app. It keeps the current pledges, adds sample pledges and two campaigns, and renames the organisation. Do not run `supabase/seed.sql`. Two product checks are still open. The water-bottles campaign stays active.
 
 1. Second login. Public sign-up is off, so add a second user in Supabase → Authentication → Users. Sign in as that person. They must not see the demo campaigns, edit one, or read a donor email. Then sign out.
 2. Closed campaign. Sign in as the demo owner. On Campaigns, use Complete on the 12-bottle campaign only. Until the SQL above is run, that row is still titled “Demo: water bottles for a workshop”. Sign out, open that campaign, and try to pledge. The page may stay visible. The pledge must be refused. Leave the rice and notebook campaigns active.

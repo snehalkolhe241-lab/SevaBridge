@@ -35,7 +35,7 @@ export const causes: { category: CampaignCategory; image: string; text: string }
 ]
 
 export const sampleOrganisations = [
-  { name: 'Setu Community Collective', note: 'Sample organisation in this demonstration' },
+  { name: 'Pune Community Learning Foundation', note: 'Community organisation in Pune' },
   { name: 'Kothrud Evening Centre', note: 'Sample education group' },
   { name: 'Hadapsar Weekly Kitchen', note: 'Sample community kitchen' },
   { name: 'Nagpur After-school Class', note: 'Sample learning group' },
