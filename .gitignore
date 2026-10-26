@@ -8,3 +8,11 @@ dist/
 supabase/seed.sql
 .DS_Store
 Thumbs.db
+
+# local working notes, kept off the public repo
+CONTEXT.md
+DESIGN_REFERENCE_AUDIT.md
+IMPLEMENTATION_PLAN.md
+PHASE_0_CURSOR_PROMPT.md
+SevaBridge_GiveDo_Design_Reference.md
+project_context_sevabridge.md
